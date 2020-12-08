@@ -4,9 +4,9 @@ plugins {
 }
 
 group 'com.zp4rker'
-version '1.0.0-release'
+version '1.0.1-release'
 
-def disbotVersion = "1.3.8-release"
+def disbotVersion = "1.5.2-release"
 def jdaVersion = "4.2.0_221"
 
 repositories {
@@ -18,7 +18,7 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    compile "com.zp4rker:disbot:$disbotVersion"
+    shadow "com.zp4rker:disbot:$disbotVersion"
 
     compile "net.dv8tion:JDA:$jdaVersion"
 }
@@ -27,17 +27,30 @@ compileKotlin {
     kotlinOptions.jvmTarget = 1.8
 }
 
-shadowJar {
-    archiveClassifier.set("")
-
-    configurations = [project.configurations.compile]
-
+jar {
     manifest {
-        attributes "Main-Class": "com.zp4rker.yasir.MainKt"
+        attributes "Main-Class": "com.zp4rker.disbot.bootstrap.Main"
+        attributes "Class-Path": "lib/"
+
+        attributes "Bot-Main": "com.zp4rker.yasir.MainKt"
         attributes "Implementation-Version": project.version
 
         attributes "Disbot-Version": disbotVersion
         attributes "JDA-Version": jdaVersion
+    }
+}
+
+shadowJar {
+    archiveClassifier.set("")
+
+    configurations = [project.configurations.shadow]
+
+    minimize {
+        exclude(dependency { it.moduleGroup == "com.zp4rker" })
+    }
+
+    dependencies {
+        exclude(dependency { !project.configurations.shadow.allDependencies.any { d -> it.moduleGroup == d.group && it.moduleName == d.name } })
     }
 }
 
